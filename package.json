@@ -5,9 +5,9 @@
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
-    "test": "ava --verbose"
+    "test": "ava --timeout=5m --verbose"
   },
-  "repository": "https://github.com/atelier-saulx/selva",
+  "repository": "https://github.com/atelier-saulx/diff",
   "lint-staged": {
     "{js,json}": [
       "prettier --write",
@@ -46,6 +46,8 @@
     "@saulx/eslint-config": "https://github.com/atelier-saulx/eslint-config",
     "@saulx/prettier-config": "https://github.com/atelier-saulx/prettier-config",
     "ava": "3.15.0",
+    "deep-object-diff": "1.1.0",
+    "deep-diff": "^1.0.2",
     "husky": "^5.0.9",
     "lint-staged": "^10.5.4",
     "ts-node": "^9.1.1",
