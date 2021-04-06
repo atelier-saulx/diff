@@ -1,2 +1,1 @@
-# diff
-Saulx diff algorithm
+# Diff
