@@ -13,7 +13,7 @@ const patch = diff(a, b)
 applyPatch(a, patch)
 ```
 
-Simple benchmark
+Benchmark
 
-![image](https://user-images.githubusercontent.com/5682524/113746757-f4f18900-9706-11eb-9e49-d44f6c411383.png)
+![image](https://user-images.githubusercontent.com/5682524/113746757-f4f18900-9706-11eb-9e49-d44f6c411383.png =250x)
 
