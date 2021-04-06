@@ -1,6 +1,6 @@
 {
   "name": "@saulx/diff",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "main": "./dist/index.js",
   "scripts": {
     "build": "tsc",
@@ -42,6 +42,10 @@
   "eslintConfig": {
     "extends": "@saulx/eslint-config"
   },
+  "keywords": [
+    "diff",
+    "patch"
+  ],
   "devDependencies": {
     "@saulx/eslint-config": "https://github.com/atelier-saulx/eslint-config",
     "@saulx/prettier-config": "https://github.com/atelier-saulx/prettier-config",
