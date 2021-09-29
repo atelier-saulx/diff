@@ -1,5 +1,5 @@
 import { hashObject } from '@saulx/hash'
-
+import { execCreatePartialDiff } from './partialDiff'
 // check faster way - map or this
 const parseValue = (v: any) => {
   if (v === null) {
@@ -22,7 +22,7 @@ const parseValue = (v: any) => {
 }
 
 // 0 = insert, value
-// 1 = from , index, amount (can be a copy a well)
+// 1 = from , amount, index (can be a copy a well)
 // 2 = index, patches[] (apply patch to a nested object or array)
 export const arrayDiff = (a, b) => {
   const aLen = a.length
@@ -149,7 +149,14 @@ export const arrayDiff = (a, b) => {
 const compareNode = (a, b, result, key: string) => {
   const type = typeof b
   // eslint-disable-next-line
-  if (type !== typeof a) {
+
+  if (type === 'function') {
+    console.info('SPESH', key)
+    const p = execCreatePartialDiff(b, a)
+    if (p) {
+      result[key] = p
+    }
+  } else if (type !== typeof a) {
     result[key] = [0, b]
   } else if (type === 'object') {
     if (b === null) {
