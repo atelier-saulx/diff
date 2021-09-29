@@ -18,9 +18,6 @@ test('partialPatch', async (t) => {
   const p = createPatch(x, y)
 
   const pDiff: CreatePartialDiff = (v) => {
-    if (!v) {
-      return { type: 'update', value: ['e'] }
-    }
     return {
       type: 'array',
       values: [
@@ -52,9 +49,6 @@ test('partialPatch', async (t) => {
   const p3 = createPatch(x, z)
 
   const pDiff2: CreatePartialDiff = (v) => {
-    if (!v) {
-      return { type: 'update', value: ['e'] }
-    }
     return {
       type: 'array',
       values: [
@@ -73,6 +67,79 @@ test('partialPatch', async (t) => {
 
   console.log('real', JSON.stringify(p3, null, 2))
   console.log('partial', JSON.stringify(p4, null, 2))
+
+  const p5 = createPatch(x, {
+    flap: pDiff2,
+  })
+
+  console.log('----------------------')
+
+  const a = { flap: ['a', 'b', 'd'] }
+
+  const p6 = createPatch(x, a)
+
+  const pDiff3: CreatePartialDiff = (v) => {
+    if (!v) {
+      return { type: 'update', value: ['e'] }
+    }
+    return {
+      type: 'array',
+      values: [
+        {
+          index: 2,
+          type: 'delete',
+        },
+      ],
+    }
+  }
+
+  const p7 = createPatch(x, {
+    flap: pDiff3,
+  })
+
+  console.log('real', JSON.stringify(p6, null, 2))
+
+  console.log(applyPatch(deepCopy(x), p6))
+  console.log('partial', JSON.stringify(p7, null, 2))
+  console.log(applyPatch(deepCopy(x), p7))
+
+  console.log('----------------------')
+
+  const b = { flap: ['a', 'b', 'x', 'y', 'd', 'e'] }
+
+  const p8 = createPatch(x, b)
+
+  const pDiff4: CreatePartialDiff = (v) => {
+    return {
+      type: 'array',
+      values: [
+        {
+          index: 2,
+          type: 'delete',
+        },
+        {
+          index: 2,
+          type: 'insert',
+          values: ['x', 'y'],
+        },
+        {
+          index: v.length,
+          type: 'insert',
+          value: 'e',
+        },
+      ],
+    }
+  }
+
+  const p9 = createPatch(x, {
+    flap: pDiff4,
+  })
+
+  console.log('real', JSON.stringify(p8, null, 2))
+
+  console.log(applyPatch(deepCopy(x), p8))
+  console.log('partial', JSON.stringify(p9, null, 2))
+  console.log(applyPatch(deepCopy(x), p9))
 
   //   __$diffOperation: { type: 'array', values: [{ index: 1, value: 'xxx' }] }
 

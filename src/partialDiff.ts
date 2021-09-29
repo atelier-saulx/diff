@@ -1,20 +1,5 @@
 type Operation = 'delete' | 'insert' | 'update' | 'merge'
 
-// false do nothing
-
-//  | 'delete' | 'update'
-
-// export type DiffDescriptor = {
-//   type?: Types
-//   operator?: Operator
-// }
-
-/*
-  // can also be a field
-  //         // { delete: true } // will delete it
-  //         return { type: 'array', values: [{ index: 1, operation: 'insert', value: 'xxx' }] }
-*/
-
 export type ArrayDiffDescriptor = {
   type: 'array'
   values: { index: number; type: Operation; value?: any; values?: any[] }[]
@@ -73,63 +58,143 @@ export const execCreatePartialDiff = (
     // put
 
     let lastIndex = 0
+    let prevDel
+    let lastAdded = 0
+    let total = 0
+    // let prev
+
     for (const v of r.values) {
       const op = v.type
       const index = v.index
 
-      if (index > lastIndex + 1) {
-        patches.push([1, index - lastIndex, lastIndex])
+      // also need to check prev...
+
+      if (lastAdded) {
+        if (index + lastAdded > lastIndex + 1) {
+          const a = index - lastIndex - 1
+          if (a > 0) {
+            total += a
+            patches.push([1, index - lastIndex - 1, lastIndex + 1])
+          }
+        }
+      } else if (prevDel ? index > lastIndex : index > lastIndex + 1) {
+        if (prevDel) {
+          const a = index - lastIndex
+
+          if (a > 0) {
+            total += a
+
+            patches.push([1, index - lastIndex, lastIndex + 1])
+          }
+        } else {
+          const a = index - lastIndex
+          if (a > 0) {
+            total += a
+
+            patches.push([1, index - lastIndex, lastIndex])
+          }
+        }
       }
+
       lastIndex = index
 
       if (op === 'delete') {
+        lastAdded = 0
+
+        patches[0]--
+        // total--
+        prevDel = true
+        // lastIndex--
         // currentValue.splice(index, 0)
-      } else if (op === 'update') {
-        const len = currentValue.length - 1
-        if (index > len) {
-          for (let i = len; i < index; i++) {}
-        } else {
-          // currentValue.splice(index, 1, v.value)
-        }
-      } else if (op === 'merge') {
-        const len = currentValue.length - 1
-        if (index > len) {
-          for (let i = len; i < index; i++) {
-            // currentValue.push(null)
-          }
-        } else {
-          // currentValue.splice(index, 1, v.value)
-        }
-      } else if (op === 'insert') {
-        const pLen = patches.length
-        let p
-        if (pLen > 1) {
-          p = patches[pLen - 1]
-        }
-        if (pLen > 1 && p[0] === 0) {
-          if (v.values) {
-            patches[0] += v.values.length
-            p.push(...v.values)
+      } else {
+        prevDel = false
+        if (op === 'update') {
+          lastAdded = 0
+
+          const len = currentValue.length - 1
+          if (index > len) {
+            for (let i = len; i < index; i++) {}
           } else {
-            patches[0]++
-            p.push(v.value)
+            // currentValue.splice(index, 1, v.value)
           }
-        } else {
-          if (v.values) {
-            patches[0] += v.values.length
-            patches.push([0].concat(v.values))
+        } else if (op === 'merge') {
+          lastAdded = 0
+          const len = currentValue.length - 1
+          if (index > len) {
+            for (let i = len; i < index; i++) {
+              // currentValue.push(null)
+            }
           } else {
-            patches[0]++
-            patches.push([0, v.value])
+            // currentValue.splice(index, 1, v.value)
           }
+        } else if (op === 'insert') {
+          const pLen = patches.length
+          let p
+          if (pLen > 1) {
+            p = patches[pLen - 1]
+          }
+          if (pLen > 1 && p[0] === 0) {
+            if (v.values) {
+              lastAdded = v.values.length
+              patches[0] += v.values.length
+              // lastIndex += v.values.length
+
+              p.push(...v.values)
+            } else {
+              patches[0]++
+              lastAdded = 1
+              p.push(v.value)
+              // lastIndex++
+            }
+          } else {
+            if (v.values) {
+              lastAdded = v.values.length
+              patches[0] += v.values.length
+              patches.push([0].concat(v.values))
+              // lastIndex += v.values.length
+            } else {
+              patches[0]++
+              lastAdded = 1
+              patches.push([0, v.value])
+              // lastIndex++
+            }
+          }
+          total += lastAdded
         }
       }
     }
 
-    if (lastIndex < patches[0]) {
-      // if (patches[pa])
-      patches.push([1, patches[0] - (lastIndex + 1), lastIndex])
+    // add total
+
+    console.log('?????????????', total)
+    if (total < patches[0]) {
+      const a = patches[0] - total
+
+      if (prevDel) {
+        if (a > 0) {
+          patches.push([1, a, lastIndex + 1])
+        }
+      } else {
+        if (a > 0) {
+          patches.push([1, a, lastIndex])
+        }
+      }
     }
+
+    // if (lastIndex < patches[0]) {
+    //   if (prevDel) {
+    //     const a = patches[0] - lastIndex
+    //     if (a > 0) {
+    //       patches.push([1, a, lastIndex + 1])
+    //     }
+    //   } else {
+    //     // lastAdded
+    //     let a = patches[0] - (lastIndex + 1)
+    //     if (a > 0) {
+    //       patches.push([1, a, lastIndex])
+    //     }
+    //   }
+    // }
 
     return patch
   } else if (r.type === 'update') {
