@@ -155,6 +155,13 @@ test('partialPatch', async (t) => {
 
   // can create more efficient patches using merge
   const pDiff5: CreatePartialDiff = (v) => {
+    if (!v) {
+      return {
+        type: 'update',
+        value: [1],
+      }
+    }
+
     return {
       type: 'array',
       values: [
@@ -200,6 +207,17 @@ test('partialPatch', async (t) => {
   console.log(applyPatch(deepCopy(snur), p10))
   console.log('partial', JSON.stringify(p11, null, 2))
   console.log(applyPatch(deepCopy(snur), p11))
+
+  console.log('----------------------')
+
+  const p12 = createPatch(
+    {},
+    {
+      flap: pDiff5,
+    }
+  )
+  console.log('partial', p12, JSON.stringify(p12, null, 2))
+  console.log('result', applyPatch({}, p12))
 
   //   __$diffOperation: { type: 'array', values: [{ index: 1, value: 'xxx' }] }
 
