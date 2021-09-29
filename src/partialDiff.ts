@@ -65,7 +65,7 @@ export const execCreatePartialDiff = (
 
     for (const v of r.values) {
       const op = v.type
-      const index = v.index
+      let index = v.index
 
       // also need to check prev...
 
@@ -96,8 +96,6 @@ export const execCreatePartialDiff = (
         }
       }
 
-      lastIndex = index
-
       if (op === 'delete') {
         lastAdded = 0
 
@@ -109,24 +107,20 @@ export const execCreatePartialDiff = (
       } else {
         prevDel = false
         if (op === 'update') {
-          lastAdded = 0
-
-          const len = currentValue.length - 1
-          if (index > len) {
-            for (let i = len; i < index; i++) {}
-          } else {
-            // currentValue.splice(index, 1, v.value)
+          lastAdded = 1
+          // lastIndex++
+          if (lastIndex === 0 && index === 1) {
+            patches.push([1, 1, 0])
+            total++
           }
+
+          total++
+          patches.push([0, v.value])
+          index++
         } else if (op === 'merge') {
           lastAdded = 0
-          const len = currentValue.length - 1
-          if (index > len) {
-            for (let i = len; i < index; i++) {
-              // currentValue.push(null)
-            }
-          } else {
-            // currentValue.splice(index, 1, v.value)
-          }
+
+          // make a patch
         } else if (op === 'insert') {
           const pLen = patches.length
           let p
@@ -137,31 +131,27 @@ export const execCreatePartialDiff = (
             if (v.values) {
               lastAdded = v.values.length
               patches[0] += v.values.length
-              // lastIndex += v.values.length
-
               p.push(...v.values)
             } else {
               patches[0]++
               lastAdded = 1
               p.push(v.value)
-              // lastIndex++
             }
           } else {
             if (v.values) {
               lastAdded = v.values.length
               patches[0] += v.values.length
               patches.push([0].concat(v.values))
-              // lastIndex += v.values.length
             } else {
               patches[0]++
               lastAdded = 1
               patches.push([0, v.value])
-              // lastIndex++
             }
           }
           total += lastAdded
         }
       }
+      lastIndex = index
     }
 
     // add total

@@ -141,6 +141,48 @@ test('partialPatch', async (t) => {
   console.log('partial', JSON.stringify(p9, null, 2))
   console.log(applyPatch(deepCopy(x), p9))
 
+  console.log('----------------------')
+
+  const snur = {
+    flap: ['a', 'b', 'c', { x: true, z: false }, 'd'],
+  }
+
+  const c = { flap: ['a', 'JURK!', 'JURK!', 'd'] }
+
+  const p10 = createPatch(snur, c)
+
+  const pDiff5: CreatePartialDiff = (v) => {
+    return {
+      type: 'array',
+      values: [
+        {
+          index: 1,
+          value: 'JURK!',
+          type: 'update',
+        },
+        {
+          index: 2,
+          value: 'JURK!',
+          type: 'update',
+        },
+        {
+          index: 3,
+          type: 'delete',
+        },
+      ],
+    }
+  }
+
+  const p11 = createPatch(snur, {
+    flap: pDiff5,
+  })
+
+  console.log('real', JSON.stringify(p10, null, 2))
+
+  console.log(applyPatch(deepCopy(snur), p10))
+  console.log('partial', JSON.stringify(p11, null, 2))
+  console.log(applyPatch(deepCopy(snur), p11))
+
   //   __$diffOperation: { type: 'array', values: [{ index: 1, value: 'xxx' }] }
 
   //   const patch = createPatchFromPartial(a, {
