@@ -1,8 +1,17 @@
+import { deepCopy, deepMerge } from '@saulx/utils'
+import createPatch from '.'
+
 type Operation = 'delete' | 'insert' | 'update' | 'merge'
 
 export type ArrayDiffDescriptor = {
   type: 'array'
-  values: { index: number; type: Operation; value?: any; values?: any[] }[]
+  values: {
+    index: number
+    fromIndex?: number
+    type: Operation
+    value?: any
+    values?: any[]
+  }[]
 }
 
 export type ValueUpdate = {
@@ -34,6 +43,10 @@ export const execCreatePartialDiff = (
 
       // handle it special
 
+      // also need to do something....
+
+      console.log('no current value do something...')
+
       return patch
       // return pat
     }
@@ -42,8 +55,6 @@ export const execCreatePartialDiff = (
     console.log(currentValue.length)
 
     const patches: any[] = [currentValue.length]
-
-    // patch[1] == ;en
 
     patch[1] = patches
     // 0 = insert, value
@@ -55,19 +66,15 @@ export const execCreatePartialDiff = (
       return a.index < b.index ? -1 : a.index === b.index ? 0 : 1
     })
 
-    // put
-
     let lastIndex = 0
     let prevDel
     let lastAdded = 0
     let total = 0
-    // let prev
+    let lastUpdate = true
 
     for (const v of r.values) {
       const op = v.type
       let index = v.index
-
-      // also need to check prev...
 
       if (lastAdded) {
         if (index + lastAdded > lastIndex + 1) {
@@ -98,30 +105,47 @@ export const execCreatePartialDiff = (
 
       if (op === 'delete') {
         lastAdded = 0
-
         patches[0]--
-        // total--
         prevDel = true
-        // lastIndex--
-        // currentValue.splice(index, 0)
+        lastUpdate = false
       } else {
         prevDel = false
-        if (op === 'update') {
-          lastAdded = 1
-          // lastIndex++
-          if (lastIndex === 0 && index === 1) {
-            patches.push([1, 1, 0])
-            total++
+        if (op === 'update' || op === 'merge') {
+          lastUpdate = true
+
+          // lastAdded++
+          let isMerge = false
+          let val = v.value
+          if (op === 'merge') {
+            const from = v.fromIndex || index
+            if (!currentValue[from] || typeof currentValue[from] !== 'object') {
+              // do nothing special
+            } else {
+              const x = deepMerge(deepCopy(currentValue[from]), val)
+              val = [2, from, createPatch(currentValue[from], x)]
+              isMerge = true
+            }
           }
-
-          total++
-          patches.push([0, v.value])
-          index++
-        } else if (op === 'merge') {
-          lastAdded = 0
-
-          // make a patch
+          const p = patches[patches.length - 1]
+          if (!isMerge && patches.length > 1 && p[0] === 0) {
+            p.push(val)
+            total++
+            index++
+          } else {
+            if (lastIndex === 0 && index === 1) {
+              patches.push([1, 1, 0])
+              total++
+            }
+            total++
+            if (isMerge) {
+              patches.push(val)
+            } else {
+              patches.push([0, val])
+            }
+            index++
+          }
         } else if (op === 'insert') {
+          lastUpdate = false
           const pLen = patches.length
           let p
           if (pLen > 1) {
@@ -154,13 +178,9 @@ export const execCreatePartialDiff = (
       lastIndex = index
     }
 
-    // add total
-
-    console.log('?????????????', total)
     if (total < patches[0]) {
       const a = patches[0] - total
-
-      if (prevDel) {
+      if (prevDel || lastUpdate) {
         if (a > 0) {
           patches.push([1, a, lastIndex + 1])
         }
@@ -170,21 +190,6 @@ export const execCreatePartialDiff = (
         }
       }
     }
-
-    // if (lastIndex < patches[0]) {
-    //   if (prevDel) {
-    //     const a = patches[0] - lastIndex
-    //     if (a > 0) {
-    //       patches.push([1, a, lastIndex + 1])
-    //     }
-    //   } else {
-    //     // lastAdded
-    //     let a = patches[0] - (lastIndex + 1)
-    //     if (a > 0) {
-    //       patches.push([1, a, lastIndex])
-    //     }
-    //   }
-    // }
 
     return patch
   } else if (r.type === 'update') {

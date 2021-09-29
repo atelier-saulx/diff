@@ -144,13 +144,16 @@ test('partialPatch', async (t) => {
   console.log('----------------------')
 
   const snur = {
-    flap: ['a', 'b', 'c', { x: true, z: false }, 'd'],
+    flap: ['a', 'b', 'c', 'd', { x: true, z: false }, 'x'],
   }
 
-  const c = { flap: ['a', 'JURK!', 'JURK!', 'd'] }
+  const c = {
+    flap: ['a', 'JURK!', 'JURK!', { flappie: true, z: true, x: true }, 'x'],
+  }
 
   const p10 = createPatch(snur, c)
 
+  // can create more efficient patches using merge
   const pDiff5: CreatePartialDiff = (v) => {
     return {
       type: 'array',
@@ -168,6 +171,21 @@ test('partialPatch', async (t) => {
         {
           index: 3,
           type: 'delete',
+        },
+        // {
+        //   index: 3,
+        //   value: {
+        //     flappie: true,
+        //     z: true,
+        //     x: true,
+        //   },
+        //   type: 'update',
+        // },
+        {
+          index: 3,
+          fromIndex: 4,
+          type: 'merge',
+          value: { flappie: true, z: true },
         },
       ],
     }
