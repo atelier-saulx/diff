@@ -247,9 +247,51 @@ test('PartialPatch value exists - delete start and insert end (array)', async (t
   t.true(deepEqual(normalPatch, partialPatch))
 })
 
+test('PartialPatch value exists - delete end and insert start (array) same', async (t) => {
+  const a = {
+    flap: [
+      { ts: 1633005553207, value: 31 },
+      { ts: 1633005551207, value: 30 },
+      { ts: 1633005549206, value: 29 },
+      { ts: 1633005547206, value: 28 },
+      { ts: 1633005541102, value: 25 },
+    ],
+  }
+
+  const pDiff: CreatePartialDiff = (v) => {
+    return {
+      type: 'array',
+      values: [
+        { index: 0, type: 'insert', value: { ts: 1633005555207, value: 32 } },
+        { index: 5, type: 'delete' },
+      ],
+    }
+  }
+  const partialPatch = createPatch(
+    a,
+    {
+      flap: pDiff,
+    },
+    { parseDiffFunctions: true }
+  )
+
+  const xx = applyPatch(deepCopy(a), partialPatch)
+
+  console.log(xx)
+  console.dir(partialPatch, { depth: 10 })
+
+  t.is(xx.flap.length, 5)
+
+  console.info(JSON.stringify(applyPatch(deepCopy(a), partialPatch)))
+})
+
 test('PartialPatch value exists - delete end and insert start (array)', async (t) => {
-  const a = { flap: ['a', 'b', 'c', 'd', 'e'] }
-  const b = { flap: ['aNew', 'a', 'b', 'c', 'd'] }
+  const a = {
+    flap: ['a', 'b', 'c', 'd', 'e'],
+  }
+  const b = {
+    flap: ['aNew', 'a', 'b', 'c', 'd'],
+  }
 
   const normalPatch = createPatch(a, b)
   const pDiff: CreatePartialDiff = (v) => {
@@ -270,7 +312,7 @@ test('PartialPatch value exists - delete end and insert start (array)', async (t
     }
   }
   const partialPatch = createPatch(
-    x,
+    a,
     {
       flap: pDiff,
     },
@@ -283,7 +325,12 @@ test('PartialPatch value exists - delete end and insert start (array)', async (t
   console.info(JSON.stringify(applyPatch(deepCopy(a), partialPatch)))
   console.info(JSON.stringify(applyPatch(deepCopy(a), normalPatch)))
 
-  t.true(deepEqual(normalPatch, partialPatch))
+  t.true(
+    deepEqual(
+      applyPatch(deepCopy(a), partialPatch),
+      applyPatch(deepCopy(a), normalPatch)
+    )
+  )
 })
 
 test('PartialPatch value exists - merge (array)', async (t) => {

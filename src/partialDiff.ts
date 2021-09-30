@@ -99,8 +99,6 @@ export const execCreatePartialDiff = (
           } else {
             const a = index - lastIndex
 
-            // patches[0]++
-
             if (a > 0) {
               total += a
 
@@ -127,7 +125,7 @@ export const execCreatePartialDiff = (
           patches[patches.length - 1][0] === 1
         ) {
           patches[patches.length - 1][2]--
-          patches[0]++
+          // patches[0]++
         }
         lastAdded = 0
       } else {
