@@ -86,28 +86,50 @@ export const execCreatePartialDiff = (
         }
       } else if (prevDel ? index > lastIndex : index > lastIndex + 1) {
         if (prevDel) {
-          const a = index - lastIndex
+          if (op === 'insert') {
+            const a = index - lastIndex - 1
 
-          if (a > 0) {
-            total += a
+            patches[0]++
 
-            patches.push([1, index - lastIndex, lastIndex + 1])
+            if (a > 0) {
+              total += a
+
+              patches.push([1, a, lastIndex + 1])
+            }
+          } else {
+            const a = index - lastIndex
+
+            // patches[0]++
+
+            if (a > 0) {
+              total += a
+
+              patches.push([1, a, lastIndex + 1])
+            }
           }
         } else {
           const a = index - lastIndex
           if (a > 0) {
             total += a
 
-            patches.push([1, index - lastIndex, lastIndex])
+            patches.push([1, a, lastIndex])
           }
         }
       }
 
       if (op === 'delete') {
-        lastAdded = 0
         patches[0]--
         prevDel = true
         lastUpdate = false
+        if (
+          lastAdded &&
+          patches.length > 1 &&
+          patches[patches.length - 1][0] === 1
+        ) {
+          patches[patches.length - 1][2]--
+          patches[0]++
+        }
+        lastAdded = 0
       } else {
         if (op === 'update' || op === 'merge') {
           lastUpdate = true

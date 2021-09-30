@@ -161,6 +161,12 @@ test('PartialPatch value exists - delete at index 0 (array), update index 2', as
     { parseDiffFunctions: true }
   )
 
+  console.info('partial', JSON.stringify(partialPatch, null, 2))
+  console.info('normal', JSON.stringify(normalPatch, null, 2))
+
+  console.info('partial', JSON.stringify(applyPatch(deepCopy(x), partialPatch)))
+  console.info('normal', JSON.stringify(applyPatch(deepCopy(x), normalPatch)))
+
   t.true(
     deepEqual(
       applyPatch(deepCopy(x), partialPatch),
@@ -199,6 +205,84 @@ test('PartialPatch value exists - delete and insert (array)', async (t) => {
     },
     { parseDiffFunctions: true }
   )
+  t.true(deepEqual(normalPatch, partialPatch))
+})
+
+test('PartialPatch value exists - delete start and insert end (array)', async (t) => {
+  const a = { flap: ['a', 'b', 'c', 'd', 'e'] }
+  const b = { flap: ['b', 'c', 'd', 'e', 'aNew'] }
+
+  const normalPatch = createPatch(a, b)
+  const pDiff: CreatePartialDiff = (v) => {
+    return {
+      type: 'array',
+      values: [
+        {
+          index: 0,
+          type: 'delete',
+        },
+
+        {
+          type: 'insert',
+          index: 5,
+          value: 'aNew',
+        },
+      ],
+    }
+  }
+  const partialPatch = createPatch(
+    x,
+    {
+      flap: pDiff,
+    },
+    { parseDiffFunctions: true }
+  )
+
+  console.info('partial', JSON.stringify(partialPatch, null, 2))
+  console.info('normal', JSON.stringify(normalPatch, null, 2))
+
+  console.info('partial', JSON.stringify(applyPatch(deepCopy(a), partialPatch)))
+  console.info('normal', JSON.stringify(applyPatch(deepCopy(a), normalPatch)))
+
+  t.true(deepEqual(normalPatch, partialPatch))
+})
+
+test('PartialPatch value exists - delete end and insert start (array)', async (t) => {
+  const a = { flap: ['a', 'b', 'c', 'd', 'e'] }
+  const b = { flap: ['aNew', 'a', 'b', 'c', 'd'] }
+
+  const normalPatch = createPatch(a, b)
+  const pDiff: CreatePartialDiff = (v) => {
+    return {
+      type: 'array',
+      values: [
+        {
+          index: 0,
+          type: 'insert',
+          value: 'aNew',
+        },
+
+        {
+          type: 'delete',
+          index: 5,
+        },
+      ],
+    }
+  }
+  const partialPatch = createPatch(
+    x,
+    {
+      flap: pDiff,
+    },
+    { parseDiffFunctions: true }
+  )
+
+  console.info('partial', JSON.stringify(partialPatch, null, 2))
+  console.info('normal', JSON.stringify(normalPatch, null, 2))
+
+  console.info(JSON.stringify(applyPatch(deepCopy(a), partialPatch)))
+  console.info(JSON.stringify(applyPatch(deepCopy(a), normalPatch)))
+
   t.true(deepEqual(normalPatch, partialPatch))
 })
 
