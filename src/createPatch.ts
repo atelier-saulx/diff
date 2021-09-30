@@ -24,7 +24,7 @@ const parseValue = (v: any) => {
 // 0 = insert, value
 // 1 = from , amount, index (can be a copy a well)
 // 2 = index, patches[] (apply patch to a nested object or array)
-export const arrayDiff = (a, b) => {
+export const arrayDiff = (a, b, ctx?: Options) => {
   const aLen = a.length
   const bLen = b.length
 
@@ -106,7 +106,7 @@ export const arrayDiff = (a, b) => {
         current[2] = current[2][0]
       }
       if (typeof a[i] === 'object' && typeof b[i] === 'object') {
-        const patchTime = createPatch(a[i], b[i])
+        const patchTime = createPatch(a[i], b[i], ctx)
         if (type === 2) {
           current.push(patchTime)
         } else {
@@ -146,13 +146,12 @@ export const arrayDiff = (a, b) => {
 // 0 insert
 // 1 remove
 // 2 array
-const compareNode = (a, b, result, key: string) => {
+const compareNode = (a, b, result, key: string, ctx?: Options) => {
   const type = typeof b
   // eslint-disable-next-line
 
-  if (type === 'function') {
-    console.info('SPESH', key)
-    const p = execCreatePartialDiff(b, a)
+  if (type === 'function' && ctx && ctx.parseDiffFunctions) {
+    const p = execCreatePartialDiff(b, a, ctx)
     if (p) {
       result[key] = p
     }
@@ -172,13 +171,13 @@ const compareNode = (a, b, result, key: string) => {
             result[key] = r
           }
         } else if (a && a.constructor === Array) {
-          const isDiff = arrayDiff(a, b)
+          const isDiff = arrayDiff(a, b, ctx)
           if (isDiff && isDiff.length > 1) {
             r = [2, isDiff]
             result[key] = r
           }
         } else {
-          const isDiff = arrayDiff(a, b)
+          const isDiff = arrayDiff(a, b, ctx)
           if (isDiff && isDiff.length > 1) {
             r = [0, isDiff]
             result[key] = r
@@ -193,7 +192,7 @@ const compareNode = (a, b, result, key: string) => {
           if (!(key in a)) {
             r[key] = [0, b[key]]
           } else {
-            compareNode(a[key], b[key], r, key)
+            compareNode(a[key], b[key], r, key, ctx)
           }
         }
         for (const key in a) {
@@ -219,7 +218,11 @@ const compareNode = (a, b, result, key: string) => {
   }
 }
 
-export const createPatch = (a: any, b: any) => {
+export type Options = {
+  parseDiffFunctions?: boolean
+}
+
+export const createPatch = (a: any, b: any, ctx?: Options) => {
   const type = typeof b
   // eslint-disable-next-line
   if (type !== typeof a) {
@@ -236,9 +239,9 @@ export const createPatch = (a: any, b: any) => {
           }
           return [0, b]
         } else if (a.constructor === Array) {
-          const isDiff = arrayDiff(a, b)
+          const isDiff = arrayDiff(a, b, ctx)
           if (isDiff && isDiff.length > 1) {
-            return [2, arrayDiff(a, b)]
+            return [2, arrayDiff(a, b, ctx)]
           }
         } else {
           return [0, b]
@@ -256,7 +259,7 @@ export const createPatch = (a: any, b: any) => {
             result[key] = [0, b[key]]
           } else {
             // same for a need to remove keys if b does not have them
-            compareNode(a[key], b[key], result, key)
+            compareNode(a[key], b[key], result, key, ctx)
           }
         }
         for (const key in a) {

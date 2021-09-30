@@ -1,5 +1,5 @@
 import { deepCopy, deepMerge } from '@saulx/utils'
-import createPatch from '.'
+import createPatch, { Options } from '.'
 
 type Operation = 'delete' | 'insert' | 'update' | 'merge'
 
@@ -25,7 +25,8 @@ export type CreatePartialDiff = (
 
 export const execCreatePartialDiff = (
   fn: CreatePartialDiff,
-  currentValue?: any
+  currentValue?: any,
+  ctx?: Options
 ) => {
   const r = fn(currentValue)
 

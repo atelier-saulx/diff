@@ -35,9 +35,13 @@ test('partialPatch', async (t) => {
     }
   }
 
-  const p2 = createPatch(x, {
-    flap: pDiff,
-  })
+  const p2 = createPatch(
+    x,
+    {
+      flap: pDiff,
+    },
+    { parseDiffFunctions: true }
+  )
 
   console.log('----------------------')
 
@@ -61,9 +65,13 @@ test('partialPatch', async (t) => {
     }
   }
 
-  const p4 = createPatch(x, {
-    flap: pDiff2,
-  })
+  const p4 = createPatch(
+    x,
+    {
+      flap: pDiff2,
+    },
+    { parseDiffFunctions: true }
+  )
 
   console.log('real', JSON.stringify(p3, null, 2))
   console.log('partial', JSON.stringify(p4, null, 2))
@@ -93,9 +101,13 @@ test('partialPatch', async (t) => {
     }
   }
 
-  const p7 = createPatch(x, {
-    flap: pDiff3,
-  })
+  const p7 = createPatch(
+    x,
+    {
+      flap: pDiff3,
+    },
+    { parseDiffFunctions: true }
+  )
 
   console.log('real', JSON.stringify(p6, null, 2))
 
@@ -131,9 +143,13 @@ test('partialPatch', async (t) => {
     }
   }
 
-  const p9 = createPatch(x, {
-    flap: pDiff4,
-  })
+  const p9 = createPatch(
+    x,
+    {
+      flap: pDiff4,
+    },
+    { parseDiffFunctions: true }
+  )
 
   console.log('real', JSON.stringify(p8, null, 2))
 
@@ -198,9 +214,13 @@ test('partialPatch', async (t) => {
     }
   }
 
-  const p11 = createPatch(snur, {
-    flap: pDiff5,
-  })
+  const p11 = createPatch(
+    snur,
+    {
+      flap: pDiff5,
+    },
+    { parseDiffFunctions: true }
+  )
 
   console.log('real', JSON.stringify(p10, null, 2))
 
@@ -214,13 +234,13 @@ test('partialPatch', async (t) => {
     {},
     {
       flap: pDiff5,
-    }
+    },
+    { parseDiffFunctions: true }
   )
   console.log('partial', p12, JSON.stringify(p12, null, 2))
   console.log('result', applyPatch({}, p12))
 
   //   __$diffOperation: { type: 'array', values: [{ index: 1, value: 'xxx' }] }
-
   //   const patch = createPatchFromPartial(a, {
   //     flap: {
   //       flur: (currentValue) => {
