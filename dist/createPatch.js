@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createPatch = exports.arrayDiff = void 0;
 const hash_1 = require("@saulx/hash");
+const partialDiff_1 = require("./partialDiff");
 // check faster way - map or this
 const parseValue = (v) => {
     if (v === null) {
@@ -20,9 +21,9 @@ const parseValue = (v) => {
     return v;
 };
 // 0 = insert, value
-// 1 = from , index, amount (can be a copy a well)
+// 1 = from , amount, index (can be a copy a well)
 // 2 = index, patches[] (apply patch to a nested object or array)
-const arrayDiff = (a, b) => {
+const arrayDiff = (a, b, ctx) => {
     const aLen = a.length;
     const bLen = b.length;
     const resultA = {};
@@ -105,7 +106,7 @@ const arrayDiff = (a, b) => {
                 current[2] = current[2][0];
             }
             if (typeof a[i] === 'object' && typeof b[i] === 'object') {
-                const patchTime = exports.createPatch(a[i], b[i]);
+                const patchTime = exports.createPatch(a[i], b[i], ctx);
                 if (type === 2) {
                     current.push(patchTime);
                 }
@@ -144,10 +145,15 @@ exports.arrayDiff = arrayDiff;
 // 0 insert
 // 1 remove
 // 2 array
-const compareNode = (a, b, result, key) => {
+const compareNode = (a, b, result, key, ctx) => {
     const type = typeof b;
-    // eslint-disable-next-line
-    if (type !== typeof a) {
+    if (type === 'function' && ctx && ctx.parseDiffFunctions) {
+        const p = partialDiff_1.execCreatePartialDiff(b, a, ctx);
+        if (p) {
+            result[key] = p;
+        }
+    }
+    else if (type !== typeof a) {
         result[key] = [0, b];
     }
     else if (type === 'object') {
@@ -167,14 +173,14 @@ const compareNode = (a, b, result, key) => {
                     }
                 }
                 else if (a && a.constructor === Array) {
-                    const isDiff = exports.arrayDiff(a, b);
+                    const isDiff = exports.arrayDiff(a, b, ctx);
                     if (isDiff && isDiff.length > 1) {
                         r = [2, isDiff];
                         result[key] = r;
                     }
                 }
                 else {
-                    const isDiff = exports.arrayDiff(a, b);
+                    const isDiff = exports.arrayDiff(a, b, ctx);
                     if (isDiff && isDiff.length > 1) {
                         r = [0, isDiff];
                         result[key] = r;
@@ -191,7 +197,7 @@ const compareNode = (a, b, result, key) => {
                         r[key] = [0, b[key]];
                     }
                     else {
-                        compareNode(a[key], b[key], r, key);
+                        compareNode(a[key], b[key], r, key, ctx);
                     }
                 }
                 for (const key in a) {
@@ -218,7 +224,28 @@ const compareNode = (a, b, result, key) => {
         }
     }
 };
-const createPatch = (a, b) => {
+const walkDiffResults = (b, key, ctx) => {
+    const bNode = b[key];
+    if (bNode) {
+        const t = typeof bNode;
+        if (t === 'function') {
+            const p = partialDiff_1.execCreatePartialDiff(b[key], undefined, ctx);
+            console.log(p);
+            if (p) {
+                b[key] = p[1];
+            }
+            else {
+                delete b[key];
+            }
+        }
+        else if (t === 'object') {
+            for (const key in bNode) {
+                walkDiffResults(bNode, key, ctx);
+            }
+        }
+    }
+};
+const createPatch = (a, b, ctx) => {
     const type = typeof b;
     // eslint-disable-next-line
     if (type !== typeof a) {
@@ -238,9 +265,9 @@ const createPatch = (a, b) => {
                     return [0, b];
                 }
                 else if (a.constructor === Array) {
-                    const isDiff = exports.arrayDiff(a, b);
+                    const isDiff = exports.arrayDiff(a, b, ctx);
                     if (isDiff && isDiff.length > 1) {
-                        return [2, exports.arrayDiff(a, b)];
+                        return [2, exports.arrayDiff(a, b, ctx)];
                     }
                 }
                 else {
@@ -255,11 +282,14 @@ const createPatch = (a, b) => {
                 }
                 for (const key in b) {
                     if (!(key in a)) {
+                        if (ctx && ctx.parseDiffFunctions) {
+                            walkDiffResults(b, key, ctx);
+                        }
                         result[key] = [0, b[key]];
                     }
                     else {
                         // same for a need to remove keys if b does not have them
-                        compareNode(a[key], b[key], result, key);
+                        compareNode(a[key], b[key], result, key, ctx);
                     }
                 }
                 for (const key in a) {
