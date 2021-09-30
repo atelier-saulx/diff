@@ -73,11 +73,14 @@ const applyArrayPatch = (value: any[], arrayPatch): any[] | null => {
       const piv = operation[2]
       const range = operation[1] + piv
       for (let j = piv; j < range; j++) {
-        if (j in used) {
+        const t = typeof value[j]
+        if (t === 'object' && j in used) {
           const copy = deepCopy(value[j])
           newArray[++aI] = copy
         } else {
-          used[j] = true
+          if (t === 'object') {
+            used[j] = true
+          }
           newArray[++aI] = value[j]
         }
       }

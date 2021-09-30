@@ -53,7 +53,6 @@ export const execCreatePartialDiff = (
     }
 
     patch[0] = 2
-    console.log(currentValue.length)
 
     const patches: any[] = [currentValue.length]
 
@@ -110,7 +109,6 @@ export const execCreatePartialDiff = (
         prevDel = true
         lastUpdate = false
       } else {
-        prevDel = false
         if (op === 'update' || op === 'merge') {
           lastUpdate = true
 
@@ -133,7 +131,7 @@ export const execCreatePartialDiff = (
             total++
             index++
           } else {
-            if (lastIndex === 0 && index === 1) {
+            if (lastIndex === 0 && index === 1 && !prevDel) {
               patches.push([1, 1, 0])
               total++
             }
@@ -175,6 +173,7 @@ export const execCreatePartialDiff = (
           }
           total += lastAdded
         }
+        prevDel = false
       }
       lastIndex = index
     }

@@ -3,20 +3,15 @@ import diff, { applyPatch, createPatch } from '../src'
 import { deepCopy, deepEqual } from '@saulx/utils'
 import { CreatePartialDiff } from '../src/partialDiff'
 
-test('partialPatch', async (t) => {
-  // pass a function option
-  // path
+const x = { flap: ['a', 'b', 'c', 'd'] }
+const y = { flap: ['a', 'b', 'c', 'd', 'e', 'f', 'g'] }
+const z = { flap: ['x', 'a', 'b', 'c', 'd'] }
+const a = { flap: ['a', 'b', 'd'] }
+const b = { flap: ['a', 'b', 'x', 'y', 'd', 'e'] }
+const c = { flap: ['b', 'c', 'd'] }
 
-  // ------------------
-
-  const x = { flap: ['a', 'b', 'c', 'd'] }
-
-  const y = { flap: ['a', 'b', 'c', 'd', 'e', 'f', 'g'] }
-
-  const z = { flap: ['x', 'a', 'b', 'c', 'd'] }
-
-  const p = createPatch(x, y)
-
+test('PartialPatch value exists - insert at end (array)', async (t) => {
+  const normalPatch = createPatch(x, y)
   const pDiff: CreatePartialDiff = (v) => {
     return {
       type: 'array',
@@ -34,25 +29,19 @@ test('partialPatch', async (t) => {
       ],
     }
   }
-
-  const p2 = createPatch(
+  const partialPatch = createPatch(
     x,
     {
       flap: pDiff,
     },
     { parseDiffFunctions: true }
   )
+  t.true(deepEqual(normalPatch, partialPatch))
+})
 
-  console.log('----------------------')
-
-  console.log('real', JSON.stringify(p, null, 2))
-  console.log('partial', JSON.stringify(p2, null, 2))
-
-  console.log('----------------------')
-
-  const p3 = createPatch(x, z)
-
-  const pDiff2: CreatePartialDiff = (v) => {
+test('PartialPatch value exists - insert at start (array)', async (t) => {
+  const normalPatch = createPatch(x, z)
+  const pDiff: CreatePartialDiff = (v) => {
     return {
       type: 'array',
       values: [
@@ -64,32 +53,19 @@ test('partialPatch', async (t) => {
       ],
     }
   }
-
-  const p4 = createPatch(
+  const partialPatch = createPatch(
     x,
     {
-      flap: pDiff2,
+      flap: pDiff,
     },
     { parseDiffFunctions: true }
   )
+  t.true(deepEqual(normalPatch, partialPatch))
+})
 
-  console.log('real', JSON.stringify(p3, null, 2))
-  console.log('partial', JSON.stringify(p4, null, 2))
-
-  const p5 = createPatch(x, {
-    flap: pDiff2,
-  })
-
-  console.log('----------------------')
-
-  const a = { flap: ['a', 'b', 'd'] }
-
-  const p6 = createPatch(x, a)
-
-  const pDiff3: CreatePartialDiff = (v) => {
-    if (!v) {
-      return { type: 'update', value: ['e'] }
-    }
+test('PartialPatch value exists - delete at index 2 (array)', async (t) => {
+  const normalPatch = createPatch(x, a)
+  const pDiff: CreatePartialDiff = (v) => {
     return {
       type: 'array',
       values: [
@@ -100,28 +76,103 @@ test('partialPatch', async (t) => {
       ],
     }
   }
-
-  const p7 = createPatch(
+  const partialPatch = createPatch(
     x,
     {
-      flap: pDiff3,
+      flap: pDiff,
+    },
+    { parseDiffFunctions: true }
+  )
+  t.true(deepEqual(normalPatch, partialPatch))
+})
+
+test('PartialPatch value exists - delete at index end (array)', async (t) => {
+  const normalPatch = createPatch(x, { flap: ['a', 'b', 'c'] })
+  const pDiff: CreatePartialDiff = (c) => {
+    return {
+      type: 'array',
+      values: [
+        {
+          index: c.length - 1,
+          type: 'delete',
+        },
+      ],
+    }
+  }
+  const partialPatch = createPatch(
+    x,
+    {
+      flap: pDiff,
     },
     { parseDiffFunctions: true }
   )
 
-  console.log('real', JSON.stringify(p6, null, 2))
+  t.true(deepEqual(normalPatch, partialPatch))
+})
 
-  console.log(applyPatch(deepCopy(x), p6))
-  console.log('partial', JSON.stringify(p7, null, 2))
-  console.log(applyPatch(deepCopy(x), p7))
+test('PartialPatch value exists - delete at index 0 (array)', async (t) => {
+  const normalPatch = createPatch(x, c)
+  const pDiff: CreatePartialDiff = () => {
+    return {
+      type: 'array',
+      values: [
+        {
+          index: 0,
+          type: 'delete',
+        },
+      ],
+    }
+  }
+  const partialPatch = createPatch(
+    x,
+    {
+      flap: pDiff,
+    },
+    { parseDiffFunctions: true }
+  )
 
-  console.log('----------------------')
+  t.true(deepEqual(normalPatch, partialPatch))
+})
 
-  const b = { flap: ['a', 'b', 'x', 'y', 'd', 'e'] }
+test('PartialPatch value exists - delete at index 0 (array), update index 2', async (t) => {
+  const d = { flap: ['b', 'd', 'd'] }
 
-  const p8 = createPatch(x, b)
+  const normalPatch = createPatch(x, d)
+  const pDiff: CreatePartialDiff = () => {
+    return {
+      type: 'array',
+      values: [
+        {
+          index: 0,
+          type: 'delete',
+        },
+        {
+          index: 1,
+          type: 'update',
+          value: 'd',
+        },
+      ],
+    }
+  }
+  const partialPatch = createPatch(
+    x,
+    {
+      flap: pDiff,
+    },
+    { parseDiffFunctions: true }
+  )
 
-  const pDiff4: CreatePartialDiff = (v) => {
+  t.true(
+    deepEqual(
+      applyPatch(deepCopy(x), partialPatch),
+      applyPatch(deepCopy(x), normalPatch)
+    )
+  )
+})
+
+test('PartialPatch value exists - delete and insert (array)', async (t) => {
+  const normalPatch = createPatch(x, b)
+  const pDiff: CreatePartialDiff = (v) => {
     return {
       type: 'array',
       values: [
@@ -142,34 +193,64 @@ test('partialPatch', async (t) => {
       ],
     }
   }
-
-  const p9 = createPatch(
+  const partialPatch = createPatch(
     x,
     {
-      flap: pDiff4,
+      flap: pDiff,
     },
     { parseDiffFunctions: true }
   )
+  t.true(deepEqual(normalPatch, partialPatch))
+})
 
-  console.log('real', JSON.stringify(p8, null, 2))
-
-  console.log(applyPatch(deepCopy(x), p8))
-  console.log('partial', JSON.stringify(p9, null, 2))
-  console.log(applyPatch(deepCopy(x), p9))
-
-  console.log('----------------------')
-
+test('PartialPatch value exists - merge (array)', async (t) => {
   const snur = {
     flap: ['a', 'b', 'c', 'd', { x: true, z: false }, 'x'],
   }
-
   const c = {
     flap: ['a', 'JURK!', 'JURK!', { flappie: true, z: true, x: true }, 'x'],
   }
+  const p = createPatch(snur, c)
+  const pDiff: CreatePartialDiff = (v) => {
+    return {
+      type: 'array',
+      values: [
+        {
+          index: 1,
+          value: 'JURK!',
+          type: 'update',
+        },
+        {
+          index: 2,
+          value: 'JURK!',
+          type: 'update',
+        },
+        {
+          index: 3,
+          type: 'delete',
+        },
+        {
+          index: 3,
+          fromIndex: 4,
+          type: 'merge',
+          value: { flappie: true, z: true },
+        },
+      ],
+    }
+  }
+  const p2 = createPatch(
+    snur,
+    {
+      flap: pDiff,
+    },
+    { parseDiffFunctions: true }
+  )
+  t.true(
+    deepEqual(applyPatch(deepCopy(snur), p), applyPatch(deepCopy(snur), p2))
+  )
+})
 
-  const p10 = createPatch(snur, c)
-
-  // can create more efficient patches using merge
+test('Partial diff without target existing', (t) => {
   const pDiff5: CreatePartialDiff = (v) => {
     if (!v) {
       return {
@@ -195,15 +276,6 @@ test('partialPatch', async (t) => {
           index: 3,
           type: 'delete',
         },
-        // {
-        //   index: 3,
-        //   value: {
-        //     flappie: true,
-        //     z: true,
-        //     x: true,
-        //   },
-        //   type: 'update',
-        // },
         {
           index: 3,
           fromIndex: 4,
@@ -213,22 +285,6 @@ test('partialPatch', async (t) => {
       ],
     }
   }
-
-  const p11 = createPatch(
-    snur,
-    {
-      flap: pDiff5,
-    },
-    { parseDiffFunctions: true }
-  )
-
-  console.log('real', JSON.stringify(p10, null, 2))
-
-  console.log(applyPatch(deepCopy(snur), p10))
-  console.log('partial', JSON.stringify(p11, null, 2))
-  console.log(applyPatch(deepCopy(snur), p11))
-
-  console.log('----------------------')
 
   const p12 = createPatch(
     {},
