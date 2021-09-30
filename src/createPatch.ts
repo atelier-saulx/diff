@@ -148,7 +148,6 @@ export const arrayDiff = (a, b, ctx?: Options) => {
 // 2 array
 const compareNode = (a, b, result, key: string, ctx?: Options) => {
   const type = typeof b
-  // eslint-disable-next-line
 
   if (type === 'function' && ctx && ctx.parseDiffFunctions) {
     const p = execCreatePartialDiff(b, a, ctx)
@@ -222,6 +221,27 @@ export type Options = {
   parseDiffFunctions?: boolean
 }
 
+const walkDiffResults = (b, key, ctx) => {
+  const bNode = b[key]
+  if (bNode) {
+    const t = typeof bNode
+    if (t === 'function') {
+      const p = execCreatePartialDiff(b[key], undefined, ctx)
+
+      console.log(p)
+      if (p) {
+        b[key] = p[1]
+      } else {
+        delete b[key]
+      }
+    } else if (t === 'object') {
+      for (const key in bNode) {
+        walkDiffResults(bNode, key, ctx)
+      }
+    }
+  }
+}
+
 export const createPatch = (a: any, b: any, ctx?: Options) => {
   const type = typeof b
   // eslint-disable-next-line
@@ -256,6 +276,9 @@ export const createPatch = (a: any, b: any, ctx?: Options) => {
 
         for (const key in b) {
           if (!(key in a)) {
+            if (ctx && ctx.parseDiffFunctions) {
+              walkDiffResults(b, key, ctx)
+            }
             result[key] = [0, b[key]]
           } else {
             // same for a need to remove keys if b does not have them

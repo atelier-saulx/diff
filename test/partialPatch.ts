@@ -1,7 +1,6 @@
 import test from 'ava'
-import diff, { applyPatch, createPatch } from '../src'
+import diff, { applyPatch, createPatch, CreatePartialDiff } from '../src'
 import { deepCopy, deepEqual } from '@saulx/utils'
-import { CreatePartialDiff } from '../src/partialDiff'
 
 const x = { flap: ['a', 'b', 'c', 'd'] }
 const y = { flap: ['a', 'b', 'c', 'd', 'e', 'f', 'g'] }
@@ -251,76 +250,50 @@ test('PartialPatch value exists - merge (array)', async (t) => {
 })
 
 test('Partial diff without target existing', (t) => {
-  const pDiff5: CreatePartialDiff = (v) => {
-    if (!v) {
-      return {
-        type: 'update',
-        value: [1],
-      }
-    }
-
-    return {
-      type: 'array',
-      values: [
-        {
-          index: 1,
-          value: 'JURK!',
-          type: 'update',
-        },
-        {
-          index: 2,
-          value: 'JURK!',
-          type: 'update',
-        },
-        {
-          index: 3,
-          type: 'delete',
-        },
-        {
-          index: 3,
-          fromIndex: 4,
-          type: 'merge',
-          value: { flappie: true, z: true },
-        },
-      ],
-    }
-  }
-
-  const p12 = createPatch(
+  const patch = createPatch(
     {},
     {
-      flap: pDiff5,
+      flap: (v) => {
+        if (!v) {
+          return {
+            type: 'update',
+            value: ['JURK!', 'JURK!', { flappie: true, z: true }],
+          }
+        }
+        return {
+          type: 'array',
+          values: [
+            {
+              index: 1,
+              value: 'JURK!',
+              type: 'update',
+            },
+            {
+              index: 2,
+              value: 'JURK!',
+              type: 'update',
+            },
+            {
+              index: 3,
+              type: 'delete',
+            },
+            {
+              index: 3,
+              fromIndex: 4,
+              type: 'merge',
+              value: { flappie: true, z: true },
+            },
+          ],
+        }
+      },
     },
     { parseDiffFunctions: true }
   )
-  console.log('partial', p12, JSON.stringify(p12, null, 2))
-  console.log('result', applyPatch({}, p12))
 
-  //   __$diffOperation: { type: 'array', values: [{ index: 1, value: 'xxx' }] }
-  //   const patch = createPatchFromPartial(a, {
-  //     flap: {
-  //       flur: (currentValue) => {
-  //         // can also be a field
-  //         // { delete: true } // will delete it
-  //         return { type: 'array', values: [{ index: 1, value: 'xxx' }] }
-  //       },
-  //     },
-  //     x: () => ({ type: 'number', value: 5 }),
-  //     y: 10, // will just set the value in place
-  //     z: {
-  //       a: 1,
-  //       b: 2,
-  //       c: 3,
-  //     },
-  //     flurp: {
-  //       flur: (currentValue) => {
-  //         return { type: 'array', values: [{ index: 1, merge: { x: true } }] }
-  //       },
-  //     },
-  //     gurk: () => {
-  //       return { type: 'object', properties: {} }
-  //     },
-  //   })
+  t.deepEqual(
+    { flap: ['JURK!', 'JURK!', { flappie: true, z: true }] },
+    applyPatch({}, patch)
+  )
 
   t.pass()
 })
