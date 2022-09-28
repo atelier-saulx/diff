@@ -128,7 +128,7 @@ test('Object', async (t) => {
   t.deepEqual(applyPatch(a, patch), b, 'is equal')
 })
 
-test('Array + nested object lots the same', async (t) => {
+test.only('Array + nested object lots the same', async (t) => {
   const obj = {
     x: true,
     y: true,
@@ -153,7 +153,7 @@ test('Array + nested object lots the same', async (t) => {
     f: [],
   }
 
-  for (let i = 0; i < 1000; i++) {
+  for (let i = 0; i < 20; i++) {
     a.f.push(JSON.parse(JSON.stringify(obj)))
     b.f.push(JSON.parse(JSON.stringify(obj)))
   }
@@ -161,6 +161,8 @@ test('Array + nested object lots the same', async (t) => {
   b.f[5] = { gurken: true }
 
   const patch = diff(a, b)
+
+  console.log(JSON.stringify(b))
 
   t.deepEqual(applyPatch(a, patch), b, 'is equal')
 
@@ -185,6 +187,8 @@ test('Array + nested object lots the same', async (t) => {
 
   var d = Date.now()
   const x = applyPatch(a, patch2)
+
+  console.log(JSON.stringify(x))
 
   // console.dir(x, { depth: 10 })
 
