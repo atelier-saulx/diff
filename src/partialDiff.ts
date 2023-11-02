@@ -1,5 +1,7 @@
+// @ts-nocheck
+
 import { deepCopy, deepMerge } from '@saulx/utils'
-import createPatch, { Options } from '.'
+import createPatch, { Options } from './index.js'
 
 type Operation = 'delete' | 'insert' | 'update' | 'merge'
 
@@ -45,8 +47,6 @@ export const execCreatePartialDiff = (
       // handle it special
 
       // also need to do something....
-
-      console.log('no current value do something...')
 
       return patch
       // return pat

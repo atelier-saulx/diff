@@ -1,8 +1,8 @@
-import applyPatch from './applyPatch'
+import applyPatch from './applyPatch.js'
 
-import { createPatch, arrayDiff, Options } from './createPatch'
+import { createPatch, arrayDiff, Options } from './createPatch.js'
 
-export { CreatePartialDiff } from './partialDiff'
+export { CreatePartialDiff } from './partialDiff.js'
 
 export default createPatch
 

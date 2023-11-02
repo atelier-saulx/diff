@@ -1,9 +1,9 @@
 import { deepCopy } from '@saulx/utils'
 
 const nestedApplyPatch = (
-  value: Object | Array<any>,
+  value: { [key: string]: any } | Array<any>,
   key: string,
-  patch
+  patch: any
 ): void | null => {
   if (patch.constructor === Array) {
     const type = patch[0]
@@ -11,25 +11,34 @@ const nestedApplyPatch = (
     // 1 - remove
     // 2 - array
     if (type === 0) {
+      // @ts-ignore
       value[key] = patch[1]
     } else if (type === 1) {
+      // @ts-ignore
       delete value[key]
     } else if (type === 2) {
+      // @ts-ignore
       const r = applyArrayPatch(value[key], patch[1])
       if (r === null) {
         return null
       }
+      // @ts-ignore
       value[key] = r
     }
   } else {
+    // @ts-ignore
     if (patch.___$toObject && value[key] && value[key].constructor === Array) {
       const v = {}
+      // @ts-ignore
       for (let i = 0; i < value[key].length; i++) {
+        // @ts-ignore
         v[i] = value[key][i]
       }
+      // @ts-ignore
       value[key] = v
     }
 
+    // @ts-ignore
     if (value[key] === undefined) {
       console.warn(
         'Diff apply patch: Cannot find key in original object',
@@ -42,6 +51,7 @@ const nestedApplyPatch = (
       for (const nkey in patch) {
         if (
           nkey !== '___$toObject' &&
+          // @ts-ignore
           nestedApplyPatch(value[key], nkey, patch[nkey]) === null
         ) {
           return null
@@ -51,13 +61,13 @@ const nestedApplyPatch = (
   }
 }
 
-const applyArrayPatch = (value: any[], arrayPatch): any[] | null => {
+const applyArrayPatch = (value: any[], arrayPatch: any): any[] | null => {
   const patchLength = arrayPatch.length
   const newArray = new Array(arrayPatch[0])
   let aI = -1
 
-  const patches = []
-  const used = {}
+  const patches: any = []
+  const used: any = {}
 
   for (let i = 1; i < patchLength; i++) {
     // 0 - insert, value
@@ -109,7 +119,7 @@ const applyArrayPatch = (value: any[], arrayPatch): any[] | null => {
   return newArray
 }
 
-const applyPatch = (value, patch): any | null => {
+const applyPatch = (value: any, patch: any): any | null => {
   if (patch) {
     if (patch.constructor === Array) {
       const type = patch[0]
@@ -127,6 +137,7 @@ const applyPatch = (value, patch): any | null => {
       if (patch.___$toObject && value && value.constructor === Array) {
         const v = {}
         for (let i = 0; i < value.length; i++) {
+          // @ts-ignore
           v[i] = value[i]
         }
         value = v

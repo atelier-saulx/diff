@@ -1,5 +1,8 @@
+// @ts-nocheck
+
 import { hashObject } from '@saulx/hash'
-import { execCreatePartialDiff } from './partialDiff'
+import { execCreatePartialDiff } from './partialDiff.js'
+
 // check faster way - map or this
 const parseValue = (v: any) => {
   if (v === null) {
@@ -146,7 +149,13 @@ export const arrayDiff = (a, b, ctx?: Options) => {
 // 0 insert
 // 1 remove
 // 2 array
-const compareNode = (a, b, result, key: string, ctx?: Options) => {
+const compareNode = (
+  a: any,
+  b: any,
+  result: any,
+  key: string,
+  ctx?: Options
+) => {
   const type = typeof b
 
   if (type === 'function' && ctx && ctx.parseDiffFunctions) {
@@ -227,8 +236,6 @@ const walkDiffResults = (b, key, ctx) => {
     const t = typeof bNode
     if (t === 'function') {
       const p = execCreatePartialDiff(b[key], undefined, ctx)
-
-      console.log(p)
       if (p) {
         b[key] = p[1]
       } else {

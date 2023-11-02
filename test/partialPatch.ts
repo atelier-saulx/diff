@@ -1,5 +1,5 @@
 import test from 'ava'
-import diff, { applyPatch, createPatch, CreatePartialDiff } from '../src'
+import { applyPatch, createPatch, CreatePartialDiff } from '../src/index.js'
 import { deepCopy, deepEqual } from '@saulx/utils'
 
 const x = { flap: ['a', 'b', 'c', 'd'] }
@@ -40,7 +40,7 @@ test('PartialPatch value exists - insert at end (array)', async (t) => {
 
 test('PartialPatch value exists - insert at start (array)', async (t) => {
   const normalPatch = createPatch(x, z)
-  const pDiff: CreatePartialDiff = (v) => {
+  const pDiff: CreatePartialDiff = () => {
     return {
       type: 'array',
       values: [
@@ -64,7 +64,7 @@ test('PartialPatch value exists - insert at start (array)', async (t) => {
 
 test('PartialPatch value exists - delete at index 2 (array)', async (t) => {
   const normalPatch = createPatch(x, a)
-  const pDiff: CreatePartialDiff = (v) => {
+  const pDiff: CreatePartialDiff = () => {
     return {
       type: 'array',
       values: [
@@ -213,7 +213,7 @@ test('PartialPatch value exists - delete start and insert end (array)', async (t
   const b = { flap: ['b', 'c', 'd', 'e', 'aNew'] }
 
   const normalPatch = createPatch(a, b)
-  const pDiff: CreatePartialDiff = (v) => {
+  const pDiff: CreatePartialDiff = () => {
     return {
       type: 'array',
       values: [
@@ -258,7 +258,7 @@ test('PartialPatch value exists - delete end and insert start (array) same', asy
     ],
   }
 
-  const pDiff: CreatePartialDiff = (v) => {
+  const pDiff: CreatePartialDiff = () => {
     return {
       type: 'array',
       values: [
@@ -294,7 +294,7 @@ test('PartialPatch value exists - delete end and insert start (array)', async (t
   }
 
   const normalPatch = createPatch(a, b)
-  const pDiff: CreatePartialDiff = (v) => {
+  const pDiff: CreatePartialDiff = () => {
     return {
       type: 'array',
       values: [
@@ -341,7 +341,7 @@ test('PartialPatch value exists - merge (array)', async (t) => {
     flap: ['a', 'JURK!', 'JURK!', { flappie: true, z: true, x: true }, 'x'],
   }
   const p = createPatch(snur, c)
-  const pDiff: CreatePartialDiff = (v) => {
+  const pDiff: CreatePartialDiff = () => {
     return {
       type: 'array',
       values: [
@@ -384,7 +384,7 @@ test('Partial diff without target existing', (t) => {
   const patch = createPatch(
     {},
     {
-      flap: (v) => {
+      flap: (v: any) => {
         if (!v) {
           return {
             type: 'update',

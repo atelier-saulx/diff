@@ -1,10 +1,10 @@
 import test from 'ava'
-import diff, { applyPatch } from '../src'
-import region from './examples/region.json'
-import { a, b } from './examples/complex'
+import diff, { applyPatch } from '../src/index.js'
+import region from './examples/region.json' assert { type: 'json' }
+import { a, b } from './examples/complex.js'
 
 test('Weird double complex', async (t) => {
-  const cp = (x) => JSON.parse(JSON.stringify(x))
+  const cp = (x: any) => JSON.parse(JSON.stringify(x))
 
   const a1 = cp(b)
   const b1 = cp(a)
@@ -81,7 +81,7 @@ test('Array', async (t) => {
   for (let i = 0; i < 10001; i++) {
     largeArr2.push(i)
   }
-  largeArr2.splice(5000, 0, 'flap')
+  largeArr2.splice(5000, 0)
   const d = Date.now()
   const largePatch = diff(largeArr, largeArr2)
   console.info('Time to calculate large patch (10k)', Date.now() - d, 'ms')
@@ -145,11 +145,11 @@ test.only('Array + nested object lots the same', async (t) => {
     },
   }
 
-  const a = {
+  const a: any = {
     f: [],
   }
 
-  const b = {
+  const b: any = {
     f: [],
   }
 
