@@ -1,27 +1,38 @@
 import test from 'ava'
 import diff, { applyPatch } from '../src/index.js'
-import region from './examples/region.json' assert { type: 'json' }
+import region from './examples/region.js'
 import { a, b } from './examples/complex.js'
 
-test('Weird double complex', async (t) => {
-  const cp = (x: any) => JSON.parse(JSON.stringify(x))
+const cp = (x: any) => JSON.parse(JSON.stringify(x))
 
+test.only('Null patch', async (t) => {
+  const a1 = {
+    x: {
+      bla: true,
+    },
+  }
+  const b1 = {
+    x: null,
+  }
+  const a = {
+    x: null,
+  }
+  const patch = diff(a1, b1)
+  const r = cp(a1)
+  t.deepEqual(applyPatch(r, patch), a, '1 is equal')
+  const patch2 = diff(b1, a1)
+  t.deepEqual(applyPatch(r, patch2), cp(a1), '2 is equal')
+})
+
+test('Weird double complex', async (t) => {
   const a1 = cp(b)
   const b1 = cp(a)
-
   const patch = diff(a1, b1)
-
   const r = cp(a1)
-
   // this patch applies a re-used thing
   t.deepEqual(applyPatch(r, patch), a, '1 is equal')
-  // console.log(JSON.stringify(patch, null, 2))
-
-  // console.log('----------------')
-
   const patch2 = diff(b1, a1)
-  // // console.log(JSON.stringify(patch2, null, 2))
-  // // dont copy! if copy its fine
+  // dont copy! if copy its fine
   t.deepEqual(applyPatch(r, patch2), cp(a1), '2 is equal')
 })
 
@@ -128,7 +139,7 @@ test('Object', async (t) => {
   t.deepEqual(applyPatch(a, patch), b, 'is equal')
 })
 
-test.only('Array + nested object lots the same', async (t) => {
+test('Array + nested object lots the same', async (t) => {
   const obj = {
     x: true,
     y: true,
@@ -162,8 +173,6 @@ test.only('Array + nested object lots the same', async (t) => {
 
   const patch = diff(a, b)
 
-  console.log(JSON.stringify(b))
-
   t.deepEqual(applyPatch(a, patch), b, 'is equal')
 
   b.f.splice(8, 1, { gurky: true })
@@ -188,15 +197,9 @@ test.only('Array + nested object lots the same', async (t) => {
   var d = Date.now()
   const x = applyPatch(a, patch2)
 
-  console.log(JSON.stringify(x))
-
-  // console.dir(x, { depth: 10 })
-
-  // console.log('Apply large object patch', Date.now() - d, 'ms')
+  console.log('Apply large object patch', Date.now() - d, 'ms')
 
   t.deepEqual(x, b, 'insert object')
-
-  // t.pass()
 })
 
 test('Array + nested object', async (t) => {

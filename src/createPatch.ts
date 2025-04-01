@@ -163,7 +163,7 @@ const compareNode = (
     if (p) {
       result[key] = p
     }
-  } else if (type !== typeof a) {
+  } else if (type !== typeof a || ((a === null || b === null) && a !== b)) {
     result[key] = [0, b]
   } else if (type === 'object') {
     if (b === null) {
@@ -252,7 +252,7 @@ const walkDiffResults = (b, key, ctx) => {
 export const createPatch = (a: any, b: any, ctx?: Options) => {
   const type = typeof b
   // eslint-disable-next-line
-  if (type !== typeof a) {
+  if (type !== typeof a || ((a === null || b === null) && a !== b)) {
     return [0, b]
   } else if (type === 'object') {
     if (b === null) {
