@@ -5,7 +5,7 @@ import { a, b } from './examples/complex.js'
 
 const cp = (x: any) => JSON.parse(JSON.stringify(x))
 
-test.only('Null patch', async (t) => {
+test('Null patch', async (t) => {
   const a1 = {
     x: {
       bla: true,
