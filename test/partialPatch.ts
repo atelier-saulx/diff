@@ -161,11 +161,11 @@ test('PartialPatch value exists - delete at index 0 (array), update index 2', as
     { parseDiffFunctions: true }
   )
 
-  console.info('partial', JSON.stringify(partialPatch, null, 2))
-  console.info('normal', JSON.stringify(normalPatch, null, 2))
+  // console.info('partial', JSON.stringify(partialPatch, null, 2))
+  // console.info('normal', JSON.stringify(normalPatch, null, 2))
 
-  console.info('partial', JSON.stringify(applyPatch(deepCopy(x), partialPatch)))
-  console.info('normal', JSON.stringify(applyPatch(deepCopy(x), normalPatch)))
+  // console.info('partial', JSON.stringify(applyPatch(deepCopy(x), partialPatch)))
+  // console.info('normal', JSON.stringify(applyPatch(deepCopy(x), normalPatch)))
 
   t.true(
     deepEqual(
@@ -238,11 +238,11 @@ test('PartialPatch value exists - delete start and insert end (array)', async (t
     { parseDiffFunctions: true }
   )
 
-  console.info('partial', JSON.stringify(partialPatch, null, 2))
-  console.info('normal', JSON.stringify(normalPatch, null, 2))
+  // console.info('partial', JSON.stringify(partialPatch, null, 2))
+  // console.info('normal', JSON.stringify(normalPatch, null, 2))
 
-  console.info('partial', JSON.stringify(applyPatch(deepCopy(a), partialPatch)))
-  console.info('normal', JSON.stringify(applyPatch(deepCopy(a), normalPatch)))
+  // console.info('partial', JSON.stringify(applyPatch(deepCopy(a), partialPatch)))
+  // console.info('normal', JSON.stringify(applyPatch(deepCopy(a), normalPatch)))
 
   t.true(deepEqual(normalPatch, partialPatch))
 })
@@ -277,12 +277,12 @@ test('PartialPatch value exists - delete end and insert start (array) same', asy
 
   const xx = applyPatch(deepCopy(a), partialPatch)
 
-  console.log(xx)
-  console.dir(partialPatch, { depth: 10 })
+  // console.log(xx)
+  // console.dir(partialPatch, { depth: 10 })
 
   t.is(xx.flap.length, 5)
 
-  console.info(JSON.stringify(applyPatch(deepCopy(a), partialPatch)))
+  // console.info(JSON.stringify(applyPatch(deepCopy(a), partialPatch)))
 })
 
 test('PartialPatch value exists - delete end and insert start (array)', async (t) => {
@@ -319,11 +319,11 @@ test('PartialPatch value exists - delete end and insert start (array)', async (t
     { parseDiffFunctions: true }
   )
 
-  console.info('partial', JSON.stringify(partialPatch, null, 2))
-  console.info('normal', JSON.stringify(normalPatch, null, 2))
+  // console.info('partial', JSON.stringify(partialPatch, null, 2))
+  // console.info('normal', JSON.stringify(normalPatch, null, 2))
 
-  console.info(JSON.stringify(applyPatch(deepCopy(a), partialPatch)))
-  console.info(JSON.stringify(applyPatch(deepCopy(a), normalPatch)))
+  // console.info(JSON.stringify(applyPatch(deepCopy(a), partialPatch)))
+  // console.info(JSON.stringify(applyPatch(deepCopy(a), normalPatch)))
 
   t.true(
     deepEqual(

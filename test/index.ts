@@ -5,6 +5,74 @@ import { a, b } from './examples/complex.js'
 
 const cp = (x: any) => JSON.parse(JSON.stringify(x))
 
+test('toJSON custom', async (t) => {
+  class Derp {
+    #nr = 0
+    constructor(nr: number) {
+      this.#nr = nr
+    }
+    toJSON() {
+      return { flap: this.#nr }
+    }
+  }
+
+  const from = {
+    bla: new Derp(1),
+  }
+  const to = {
+    bla: new Derp(2),
+  }
+  const patchedResult = {
+    bla: new Derp(2),
+  }
+  const patch = diff(from, to)
+  const r = cp(from)
+  t.deepEqual(
+    JSON.stringify(applyPatch(r, patch)),
+    JSON.stringify(patchedResult),
+    'patch custom object'
+  )
+})
+
+test('toJSON object', async (t) => {
+  const from = {
+    bla: new Date(1),
+  }
+  const to = {
+    bla: new Date(2),
+  }
+  const patchedResult = {
+    bla: new Date(2),
+  }
+  const patch = diff(from, to)
+  const r = cp(from)
+  t.deepEqual(
+    JSON.stringify(applyPatch(r, patch)),
+    JSON.stringify(patchedResult),
+    'patch date object'
+  )
+})
+
+test('toJSON array', async (t) => {
+  const from = {
+    bla: [new Date(1)],
+  }
+  const to = {
+    bla: [new Date(2)],
+  }
+  const patchedResult = {
+    bla: [new Date(2)],
+  }
+  const patch = diff(from, to)
+  const r = cp(from)
+
+  t.deepEqual(
+    JSON.stringify(applyPatch(r, patch)),
+    JSON.stringify(patchedResult),
+    'patch date object'
+  )
+})
+
 test('Null patch', async (t) => {
   const a1 = {
     x: {

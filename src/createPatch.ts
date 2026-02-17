@@ -3,6 +3,21 @@
 import { hashObject } from '@saulx/hash'
 import { execCreatePartialDiff } from './partialDiff.js'
 
+const parseToJSON = (v: any): any => {
+  if (
+    typeof v === 'object' &&
+    v !== null &&
+    'toJSON' in v &&
+    typeof v.toJSON === 'function'
+  ) {
+    return v.toJSON()
+  } else {
+    return v
+  }
+}
+
+// make this symbols
+
 // check faster way - map or this
 const parseValue = (v: any) => {
   if (v === null) {
@@ -18,6 +33,9 @@ const parseValue = (v: any) => {
   }
 
   if (typeof v === 'object' && v !== null) {
+    if ('toJSON' in v && typeof v.toJSON === 'function') {
+      return v.toJSON()
+    }
     return '___obj' + hashObject(v)
   }
   // very long string might be a problem...
@@ -108,6 +126,7 @@ export const arrayDiff = (a, b, ctx?: Options) => {
       if (type === 1) {
         current[2] = current[2][0]
       }
+
       if (typeof a[i] === 'object' && typeof b[i] === 'object') {
         const patchTime = createPatch(a[i], b[i], ctx)
         if (type === 2) {
@@ -191,6 +210,17 @@ const compareNode = (
             result[key] = r
           }
         }
+      } else if ('toJSON' in a && typeof a.toJSON === 'function') {
+        if ('toJSON' in b && typeof b.toJSON === 'function') {
+          a = a.toJSON()
+          b = b.toJSON()
+          if (a !== b) {
+            result[key] = [0, b]
+          }
+        } else if (a !== b) {
+          // becomes slower when you use the key toJSON (even if its not a function)
+          result[key] = [0, b]
+        }
       } else {
         r = {}
         if (a && a.constructor === Array && a.length) {
@@ -250,6 +280,9 @@ const walkDiffResults = (b, key, ctx) => {
 }
 
 export const createPatch = (a: any, b: any, ctx?: Options) => {
+  // a = parseToJSON(a)
+  // b = parseToJSON(b)
+
   const type = typeof b
   // eslint-disable-next-line
   if (type !== typeof a || ((a === null || b === null) && a !== b)) {
@@ -271,6 +304,16 @@ export const createPatch = (a: any, b: any, ctx?: Options) => {
             return [2, arrayDiff(a, b, ctx)]
           }
         } else {
+          return [0, b]
+        }
+      } else if ('toJSON' in a && typeof a.toJSON === 'function') {
+        if ('toJSON' in b && typeof b.toJSON === 'function') {
+          a = a.toJSON()
+          b = b.toJSON()
+          if (a !== b) {
+            return [0, b]
+          }
+        } else if (a !== b) {
           return [0, b]
         }
       } else {
